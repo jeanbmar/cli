@@ -52,6 +52,7 @@ Object {
     "cit": "install-ci-test",
     "clean-install": "ci",
     "clean-install-test": "cit",
+    "cp": "copy",
     "create": "init",
     "ddp": "dedupe",
     "dist-tags": "dist-tag",
@@ -169,6 +170,7 @@ Object {
     "doctor",
     "exec",
     "explain",
+    "copy",
   ],
   "plumbing": Array [
     "birthday",
@@ -188,6 +190,7 @@ Object {
     "cit": "install-ci-test",
     "clean-install": "ci",
     "clean-install-test": "cit",
+    "cp": "copy",
     "create": "init",
     "ddp": "dedupe",
     "i": "install",

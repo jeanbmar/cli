@@ -110,6 +110,7 @@ Array [
       doctor
       exec
       explain
+      copy
       un
       rb
       list
@@ -131,6 +132,7 @@ Array [
       clean-install-test
       x
       why
+      cp
       la
       verison
       ic

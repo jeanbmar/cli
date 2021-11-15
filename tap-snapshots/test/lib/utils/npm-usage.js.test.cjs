@@ -22,11 +22,11 @@ npm help npm       more involved overview
 All commands:
 
     access, adduser, audit, bin, bugs, cache, ci, completion,
-    config, dedupe, deprecate, diff, dist-tag, docs, doctor,
-    edit, exec, explain, explore, find-dupes, fund, get, help,
-    hook, init, install, install-ci-test, install-test, link,
-    ll, login, logout, ls, org, outdated, owner, pack, ping,
-    pkg, prefix, profile, prune, publish, rebuild, repo,
+    config, copy, dedupe, deprecate, diff, dist-tag, docs,
+    doctor, edit, exec, explain, explore, find-dupes, fund, get,
+    help, hook, init, install, install-ci-test, install-test,
+    link, ll, login, logout, ls, org, outdated, owner, pack,
+    ping, pkg, prefix, profile, prune, publish, rebuild, repo,
     restart, root, run-script, search, set, set-script,
     shrinkwrap, star, stars, start, stop, team, test, token,
     uninstall, unpublish, unstar, update, version, view, whoami
@@ -58,11 +58,11 @@ npm help npm       more involved overview
 All commands:
 
     access, adduser, audit, bin, bugs, cache, ci, completion,
-    config, dedupe, deprecate, diff, dist-tag, docs, doctor,
-    edit, exec, explain, explore, find-dupes, fund, get, help,
-    hook, init, install, install-ci-test, install-test, link,
-    ll, login, logout, ls, org, outdated, owner, pack, ping,
-    pkg, prefix, profile, prune, publish, rebuild, repo,
+    config, copy, dedupe, deprecate, diff, dist-tag, docs,
+    doctor, edit, exec, explain, explore, find-dupes, fund, get,
+    help, hook, init, install, install-ci-test, install-test,
+    link, ll, login, logout, ls, org, outdated, owner, pack,
+    ping, pkg, prefix, profile, prune, publish, rebuild, repo,
     restart, root, run-script, search, set, set-script,
     shrinkwrap, star, stars, start, stop, team, test, token,
     uninstall, unpublish, unstar, update, version, view, whoami
@@ -94,11 +94,11 @@ npm help npm       more involved overview
 All commands:
 
     access, adduser, audit, bin, bugs, cache, ci, completion,
-    config, dedupe, deprecate, diff, dist-tag, docs, doctor,
-    edit, exec, explain, explore, find-dupes, fund, get, help,
-    hook, init, install, install-ci-test, install-test, link,
-    ll, login, logout, ls, org, outdated, owner, pack, ping,
-    pkg, prefix, profile, prune, publish, rebuild, repo,
+    config, copy, dedupe, deprecate, diff, dist-tag, docs,
+    doctor, edit, exec, explain, explore, find-dupes, fund, get,
+    help, hook, init, install, install-ci-test, install-test,
+    link, ll, login, logout, ls, org, outdated, owner, pack,
+    ping, pkg, prefix, profile, prune, publish, rebuild, repo,
     restart, root, run-script, search, set, set-script,
     shrinkwrap, star, stars, start, stop, team, test, token,
     uninstall, unpublish, unstar, update, version, view, whoami
@@ -130,11 +130,11 @@ npm help npm       more involved overview (in a browser)
 All commands:
 
     access, adduser, audit, bin, bugs, cache, ci, completion,
-    config, dedupe, deprecate, diff, dist-tag, docs, doctor,
-    edit, exec, explain, explore, find-dupes, fund, get, help,
-    hook, init, install, install-ci-test, install-test, link,
-    ll, login, logout, ls, org, outdated, owner, pack, ping,
-    pkg, prefix, profile, prune, publish, rebuild, repo,
+    config, copy, dedupe, deprecate, diff, dist-tag, docs,
+    doctor, edit, exec, explain, explore, find-dupes, fund, get,
+    help, hook, init, install, install-ci-test, install-test,
+    link, ll, login, logout, ls, org, outdated, owner, pack,
+    ping, pkg, prefix, profile, prune, publish, rebuild, repo,
     restart, root, run-script, search, set, set-script,
     shrinkwrap, star, stars, start, stop, team, test, token,
     uninstall, unpublish, unstar, update, version, view, whoami
@@ -301,6 +301,22 @@ All commands:
                     alias: c
                     
                     Run "npm help config" for more info
+
+    copy            npm copy
+                    
+                    Copy package to new location
+                    
+                    Usage:
+                    npm copy <destination>
+                    
+                    Options:
+                    [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+                    [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+                    [-ws|--workspaces] [--include-workspace-root]
+                    
+                    alias: cp
+                    
+                    Run "npm help copy" for more info
 
     dedupe          npm dedupe
                     
