@@ -156,6 +156,8 @@ exports[`test/lib/commands/config.js TAP config list --json > output matches sna
   "workspace": [],
   "workspaces": null,
   "yes": null,
+  "omit-lockfile-registry-resolved": false,
+  "record-default-registry": false,
   "metrics-registry": "https://registry.npmjs.org/"
 }
 `
@@ -252,6 +254,7 @@ noproxy = [""]
 npm-version = "{NPM-VERSION}" 
 offline = false 
 omit = [] 
+omit-lockfile-registry-resolved = false 
 only = null 
 optional = null 
 otp = null 
@@ -269,6 +272,7 @@ progress = true
 proxy = null 
 read-only = false 
 rebuild-bundle = true 
+record-default-registry = false 
 registry = "https://registry.npmjs.org/" 
 save = true 
 save-bundle = false 
