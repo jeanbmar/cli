@@ -5,11 +5,13 @@
  * for tests against any registry data.
  */
 const pacote = require('pacote')
+const npa = require('npm-package-arg')
 class MockRegistry {
   #tap
   #nock
   #registry
   #authorization
+  #basic
 
   constructor (opts) {
     if (!opts.registry) {
@@ -17,6 +19,7 @@ class MockRegistry {
     }
     this.#registry = (new URL(opts.registry)).origin
     this.#authorization = opts.authorization
+    this.#basic = opts.basic
     // Required for this.package
     this.#tap = opts.tap
   }
@@ -31,6 +34,9 @@ class MockRegistry {
       if (this.#authorization) {
         reqheaders.authorization = `Bearer ${this.#authorization}`
       }
+      if (this.#basic) {
+        reqheaders.authorization = `Basic ${this.#basic}`
+      }
       this.#nock = tnock(this.#tap, this.#registry, { reqheaders })
     }
     return this.#nock
@@ -38,6 +44,19 @@ class MockRegistry {
 
   set nock (nock) {
     this.#nock = nock
+  }
+
+  search ({ responseCode = 200, results = [], error }) {
+    // the flags, score, and searchScore parts of the response are never used
+    // by npm, only package is used
+    const response = results.map(p => ({ package: p }))
+    this.nock = this.nock.get('/-/v1/search').query(true)
+    if (error) {
+      this.nock = this.nock.replyWithError(error)
+    } else {
+      this.nock = this.nock.reply(responseCode, { objects: response })
+    }
+    return this.nock
   }
 
   whoami ({ username, body, responseCode = 200, times = 1 }) {
@@ -82,6 +101,16 @@ class MockRegistry {
       `/-/team/${encodeURIComponent(scope)}/${encodeURIComponent(teamName)}/package`,
       { package: spec }
     ).reply(200)
+  }
+
+  couchuser ({ username, body, responseCode = 200 }) {
+    if (body) {
+      this.nock = this.nock.get(`/-/user/org.couchdb.user:${encodeURIComponent(username)}`)
+        .reply(responseCode, body)
+    } else {
+      this.nock = this.nock.get(`/-/user/org.couchdb.user:${encodeURIComponent(username)}`)
+        .reply(responseCode, { _id: `org.couchdb.user:${username}`, email: '', name: username })
+    }
   }
 
   couchlogin ({ username, password, email, otp, token = 'npm_default-test-token' }) {
@@ -154,29 +183,48 @@ class MockRegistry {
     }
   }
 
+  star (manifest, users) {
+    const spec = npa(manifest.name)
+    this.nock = this.nock.put(`/${spec.escapedName}`, {
+      _id: manifest._id,
+      _rev: manifest._rev,
+      users,
+    }).reply(200, { ...manifest, users })
+  }
+
+  ping ({ body = {}, responseCode = 200 } = {}) {
+    this.nock = this.nock.get('/-/ping?write=true').reply(responseCode, body)
+  }
+
   async package ({ manifest, times = 1, query, tarballs }) {
     let nock = this.nock
-    nock = nock.get(`/${manifest.name}`).times(times)
+    const spec = npa(manifest.name)
+    nock = nock.get(`/${spec.escapedName}`).times(times)
     if (query) {
       nock = nock.query(query)
     }
     nock = nock.reply(200, manifest)
     if (tarballs) {
       for (const version in tarballs) {
-      // for (const version in manifest.versions) {
-        const packument = manifest.versions[version]
-        const dist = new URL(packument.dist.tarball)
-        const tarball = await pacote.tarball(tarballs[version])
-        nock.get(dist.pathname).reply(200, tarball)
+        const m = manifest.versions[version]
+        nock = await this.tarball({ manifest: m, tarball: tarballs[version] })
       }
     }
     this.nock = nock
   }
 
+  async tarball ({ manifest, tarball }) {
+    const nock = this.nock
+    const dist = new URL(manifest.dist.tarball)
+    const tar = await pacote.tarball(tarball)
+    nock.get(dist.pathname).reply(200, tar)
+    return nock
+  }
+
   // either pass in packuments if you need to set specific attributes besides version,
   // or an array of versions
   // the last packument in the packuments or versions array will be tagged latest
-  manifest ({ name = 'test-package', packuments, versions } = {}) {
+  manifest ({ name = 'test-package', users, packuments, versions } = {}) {
     packuments = this.packuments(packuments, name)
     const latest = packuments.slice(-1)[0]
     const manifest = {
@@ -189,6 +237,9 @@ class MockRegistry {
       time: {},
       'dist-tags': { latest: latest.version },
       ...latest,
+    }
+    if (users) {
+      manifest.users = users
     }
     if (versions) {
       packuments = versions.map(version => ({ version }))
@@ -203,6 +254,7 @@ class MockRegistry {
         dist: {
           tarball: `${this.#registry}/${name}/-/${name}-${packument.version}.tgz`,
         },
+        maintainers: [],
         ...packument,
       }
       manifest.time[packument.version] = new Date()

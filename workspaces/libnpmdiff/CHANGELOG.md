@@ -1,5 +1,20 @@
 # Changelog
 
+## [4.0.5](https://github.com/npm/cli/compare/libnpmdiff-v4.0.4...libnpmdiff-v4.0.5) (2022-08-31)
+
+### Dependencies
+
+  * [`1286f03`](https://github.com/npm/cli/commit/1286f03fe73dee9a447b13b662f0c5622ab6ec9e) [#5381](https://github.com/npm/cli/pull/5381) deps: `unique-filename@2.0.1`
+  * [`f4205e5`](https://github.com/npm/cli/commit/f4205e57d6c4ee5f2ff7d21ffc116ffc420d191e) [#5381](https://github.com/npm/cli/pull/5381) deps: `diff@5.1.0`
+  * [`8ab12dc`](https://github.com/npm/cli/commit/8ab12dc32b26db770b868cf694cedab38f4e7460) [#5323](https://github.com/npm/cli/pull/5323) deps: `@npmcli/eslint-config@3.1.0`
+
+## [4.0.4](https://github.com/npm/cli/compare/libnpmdiff-v4.0.3...libnpmdiff-v4.0.4) (2022-06-22)
+
+
+### Dependencies
+
+* pacote@13.6.1 ([2e50cb8](https://github.com/npm/cli/commit/2e50cb83e84cf25fee93ba0ca5a0343fbdb33c41))
+
 ### [4.0.3](https://github.com/npm/cli/compare/libnpmdiff-v4.0.2...libnpmdiff-v4.0.3) (2022-04-06)
 
 

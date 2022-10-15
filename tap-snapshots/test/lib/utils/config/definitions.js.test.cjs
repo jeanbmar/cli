@@ -76,6 +76,7 @@ Array [
   "init.license",
   "init.module",
   "init.version",
+  "install-links",
   "json",
   "key",
   "legacy-bundling",
@@ -96,6 +97,7 @@ Array [
   "npm-version",
   "offline",
   "omit",
+  "omit-lockfile-registry-resolved",
   "only",
   "optional",
   "otp",
@@ -114,6 +116,7 @@ Array [
   "read-only",
   "rebuild-bundle",
   "registry",
+  "replace-registry-host",
   "save",
   "save-bundle",
   "save-dev",
@@ -168,6 +171,8 @@ exports[`test/lib/utils/config/definitions.js TAP > config description for _auth
 * Type: null or String
 
 A basic-auth string to use when authenticating against the npm registry.
+This will ONLY be used to authenticate against the npm registry. For other
+registries you will need to scope it like "//other-registry.tld/:_auth"
 
 Warning: This should generally not be set via a command-line option. It is
 safer to use a registry-provided authentication bearer token stored in the
@@ -249,11 +254,12 @@ exports[`test/lib/utils/config/definitions.js TAP > config description for auth-
 #### \`auth-type\`
 
 * Default: "legacy"
-* Type: "legacy", "sso", "saml", or "oauth"
-* DEPRECATED: This method of SSO/SAML/OAuth is deprecated and will be removed
-  in a future version of npm in favor of web-based login.
+* Type: "legacy", "web", "sso", "saml", "oauth", or "webauthn"
 
-What authentication strategy to use with \`adduser\`/\`login\`.
+NOTE: auth-type values "sso", "saml", "oauth", and "webauthn" will be
+removed in a future version.
+
+What authentication strategy to use with \`login\`.
 `
 
 exports[`test/lib/utils/config/definitions.js TAP > config description for before 1`] = `
@@ -399,8 +405,9 @@ newlines replaced by the string "\\n". For example:
 cert="-----BEGIN CERTIFICATE-----\\nXXXX\\nXXXX\\n-----END CERTIFICATE-----"
 \`\`\`
 
-It is _not_ the path to a certificate file (and there is no "certfile"
-option).
+It is _not_ the path to a certificate file, though you can set a
+registry-scoped "certfile" path like
+"//other-registry.tld/:certfile=/path/to/cert.pem".
 `
 
 exports[`test/lib/utils/config/definitions.js TAP > config description for ci-name 1`] = `
@@ -973,6 +980,17 @@ exports[`test/lib/utils/config/definitions.js TAP > config description for init.
 Alias for \`--init-version\`
 `
 
+exports[`test/lib/utils/config/definitions.js TAP > config description for install-links 1`] = `
+#### \`install-links\`
+
+* Default: false
+* Type: Boolean
+
+When set file: protocol dependencies that exist outside of the project root
+will be packed and installed as regular dependencies instead of creating a
+symlink. This option has no effect on workspaces.
+`
+
 exports[`test/lib/utils/config/definitions.js TAP > config description for json 1`] = `
 #### \`json\`
 
@@ -1000,7 +1018,8 @@ format with newlines replaced by the string "\\n". For example:
 key="-----BEGIN PRIVATE KEY-----\\nXXXX\\nXXXX\\n-----END PRIVATE KEY-----"
 \`\`\`
 
-It is _not_ the path to a key file (and there is no "keyfile" option).
+It is _not_ the path to a key file, though you can set a registry-scoped
+"keyfile" path like "//other-registry.tld/:keyfile=/path/to/key.pem".
 `
 
 exports[`test/lib/utils/config/definitions.js TAP > config description for legacy-bundling 1`] = `
@@ -1062,6 +1081,15 @@ exports[`test/lib/utils/config/definitions.js TAP > config description for locat
 * Type: "global", "user", or "project"
 
 When passed to \`npm config\` this refers to which config file to use.
+
+When set to "global" mode, packages are installed into the \`prefix\` folder
+instead of the current working directory. See
+[folders](/configuring-npm/folders) for more on the differences in behavior.
+
+* packages are installed into the \`{prefix}/lib/node_modules\` folder, instead
+  of the current working directory.
+* bin files are linked to \`{prefix}/bin\`
+* man pages are linked to \`{prefix}/share/man\`
 `
 
 exports[`test/lib/utils/config/definitions.js TAP > config description for lockfile-version 1`] = `
@@ -1225,6 +1253,18 @@ If the resulting omit list includes \`'dev'\`, then the \`NODE_ENV\` environment
 variable will be set to \`'production'\` for all lifecycle scripts.
 `
 
+exports[`test/lib/utils/config/definitions.js TAP > config description for omit-lockfile-registry-resolved 1`] = `
+#### \`omit-lockfile-registry-resolved\`
+
+* Default: false
+* Type: Boolean
+
+This option causes npm to create lock files without a \`resolved\` key for
+registry dependencies. Subsequent installs will need to resolve tarball
+endpoints with the configured registry, likely resulting in a longer install
+time.
+`
+
 exports[`test/lib/utils/config/definitions.js TAP > config description for only 1`] = `
 #### \`only\`
 
@@ -1276,7 +1316,7 @@ exports[`test/lib/utils/config/definitions.js TAP > config description for packa
 * Default:
 * Type: String (can be set multiple times)
 
-The package to install for [\`npm exec\`](/commands/npm-exec)
+The package or packages to install for [\`npm exec\`](/commands/npm-exec)
 `
 
 exports[`test/lib/utils/config/definitions.js TAP > config description for package-lock 1`] = `
@@ -1287,10 +1327,6 @@ exports[`test/lib/utils/config/definitions.js TAP > config description for packa
 
 If set to false, then ignore \`package-lock.json\` files when installing. This
 will also prevent _writing_ \`package-lock.json\` if \`save\` is true.
-
-When package package-locks are disabled, automatic pruning of extraneous
-modules will also be disabled. To remove extraneous modules with
-package-locks disabled use \`npm prune\`.
 
 This configuration does not affect \`npm ci\`.
 `
@@ -1425,6 +1461,23 @@ exports[`test/lib/utils/config/definitions.js TAP > config description for regis
 The base URL of the npm registry.
 `
 
+exports[`test/lib/utils/config/definitions.js TAP > config description for replace-registry-host 1`] = `
+#### \`replace-registry-host\`
+
+* Default: "npmjs"
+* Type: "npmjs", "never", "always", or String
+
+Defines behavior for replacing the registry host in a lockfile with the
+configured registry.
+
+The default behavior is to replace package dist URLs from the default
+registry (https://registry.npmjs.org) to the configured registry. If set to
+"never", then use the registry value. If set to "always", then replace the
+registry host with the configured host every time.
+
+You may also specify a bare hostname (e.g., "registry.npmjs.org").
+`
+
 exports[`test/lib/utils/config/definitions.js TAP > config description for save 1`] = `
 #### \`save\`
 
@@ -1557,7 +1610,7 @@ exports[`test/lib/utils/config/definitions.js TAP > config description for scrip
 * Type: null or String
 
 The shell to use for scripts run with the \`npm exec\`, \`npm run\` and \`npm
-init <pkg>\` commands.
+init <package-spec>\` commands.
 `
 
 exports[`test/lib/utils/config/definitions.js TAP > config description for searchexclude 1`] = `

@@ -24,11 +24,11 @@ t.test('should run test script from package.json', async t => {
       loglevel: 'silent',
     },
   })
-  const [scriptShell] = makeSpawnArgs({ path: npm.prefix })
-  const script = spawk.spawn(scriptShell, (args) => {
-    t.ok(args.includes('node ./test-test.js "foo"'), 'ran test script with extra args')
-    return true
-  })
+  const [scriptShell, scriptArgs] = makeSpawnArgs({ path: npm.prefix, cmd: 'node ./test-test.js' })
+  let scriptContent = scriptArgs.pop()
+  scriptContent += ' foo'
+  scriptArgs.push(scriptContent)
+  const script = spawk.spawn(scriptShell, scriptArgs)
   await npm.exec('test', ['foo'])
   t.ok(script.called, 'script ran')
 })

@@ -3,6 +3,7 @@ const { resolve, dirname, join } = require('path')
 
 const { load: loadMockNpm } = require('../fixtures/mock-npm.js')
 const mockGlobals = require('../fixtures/mock-globals')
+const fs = require('@npmcli/fs')
 
 // delete this so that we don't have configs from the fact that it
 // is being run by 'npm test'
@@ -435,23 +436,42 @@ t.test('debug log', async t => {
     t.match(debug, log2.join(' '), 'after load log appears')
   })
 
-  t.test('with bad dir', async t => {
-    const { npm } = await loadMockNpm(t, {
+  t.test('can load with bad dir', async t => {
+    const { npm, testdir } = await loadMockNpm(t, {
+      load: false,
       config: {
-        'logs-dir': 'LOGS_DIR',
-      },
-      mocks: {
-        '@npmcli/fs': {
-          mkdir: async (dir) => {
-            if (dir.includes('LOGS_DIR')) {
-              throw new Error('err')
-            }
-          },
-        },
+        'logs-dir': (c) => join(c.testdir, 'my_logs_dir'),
       },
     })
+    const logsDir = join(testdir, 'my_logs_dir')
 
-    t.equal(npm.logFiles.length, 0, 'no log file')
+    // make logs dir a file before load so it files
+    await fs.writeFile(logsDir, 'A_TEXT_FILE')
+    await t.resolves(npm.load(), 'loads with invalid logs dir')
+
+    t.equal(npm.logFiles.length, 0, 'no log files array')
+    t.strictSame(fs.readFileSync(logsDir, 'utf-8'), 'A_TEXT_FILE')
+  })
+})
+
+t.test('cache dir', async t => {
+  t.test('creates a cache dir', async t => {
+    const { npm } = await loadMockNpm(t)
+
+    t.ok(fs.existsSync(npm.cache), 'cache dir exists')
+  })
+
+  t.test('can load with a bad cache dir', async t => {
+    const { npm, cache } = await loadMockNpm(t, {
+      load: false,
+      // The easiest way to make mkdir(cache) fail is to make it a file.
+      // This will have the same effect as if its read only or inaccessible.
+      cacheDir: 'A_TEXT_FILE',
+    })
+
+    await t.resolves(npm.load(), 'loads with cache dir as a file')
+
+    t.equal(fs.readFileSync(cache, 'utf-8'), 'A_TEXT_FILE')
   })
 })
 
@@ -620,7 +640,7 @@ t.test('implicit workspace rejection', async t => {
     }),
   })
   await t.rejects(
-    mock.npm.exec('owner', []),
+    mock.npm.exec('team', []),
     /This command does not support workspaces/
   )
 })
@@ -653,4 +673,62 @@ t.test('implicit workspace accept', async t => {
     }),
   })
   await t.rejects(mock.npm.exec('org', []), /.*Usage/)
+})
+
+t.test('usage', async t => {
+  const { npm } = await loadMockNpm(t)
+  t.afterEach(() => {
+    npm.config.set('viewer', null)
+    npm.config.set('long', false)
+    npm.config.set('userconfig', '/some/config/file/.npmrc')
+  })
+  const { dirname } = require('path')
+  const basedir = dirname(dirname(__dirname))
+  t.cleanSnapshot = str => str.split(basedir).join('{BASEDIR}')
+    .split(require('../../package.json').version).join('{VERSION}')
+
+  npm.config.set('viewer', null)
+  npm.config.set('long', false)
+  npm.config.set('userconfig', '/some/config/file/.npmrc')
+
+  t.test('basic usage', async t => {
+    t.matchSnapshot(await npm.usage)
+    t.end()
+  })
+
+  t.test('with browser', async t => {
+    npm.config.set('viewer', 'browser')
+    t.matchSnapshot(await npm.usage)
+    t.end()
+  })
+
+  t.test('with long', async t => {
+    npm.config.set('long', true)
+    t.matchSnapshot(await npm.usage)
+    t.end()
+  })
+
+  t.test('set process.stdout.columns', async t => {
+    const { columns } = process.stdout
+    t.teardown(() => {
+      Object.defineProperty(process.stdout, 'columns', {
+        value: columns,
+        enumerable: true,
+        configurable: true,
+        writable: true,
+      })
+    })
+    const cases = [0, 90]
+    for (const cols of cases) {
+      t.test(`columns=${cols}`, async t => {
+        Object.defineProperty(process.stdout, 'columns', {
+          value: cols,
+          enumerable: true,
+          configurable: true,
+          writable: true,
+        })
+        t.matchSnapshot(await npm.usage)
+      })
+    }
+  })
 })

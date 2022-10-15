@@ -26,7 +26,7 @@ All commands:
     edit, exec, explain, explore, find-dupes, fund, get, help,
     hook, init, install, install-ci-test, install-test, link,
     ll, login, logout, ls, org, outdated, owner, pack, ping,
-    pkg, prefix, profile, prune, publish, rebuild, repo,
+    pkg, prefix, profile, prune, publish, query, rebuild, repo,
     restart, root, run-script, search, set, set-script,
     shrinkwrap, star, stars, start, stop, team, test, token,
     uninstall, unpublish, unstar, update, version, view, whoami,
@@ -44,10 +44,29 @@ npm {CWD}
 `
 
 exports[`test/index.js TAP npm ci > should throw mismatch deps in lock file error 1`] = `
+npm ERR! code EUSAGE
+npm ERR! 
 npm ERR! \`npm ci\` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update your lock file with \`npm install\` before continuing.
 npm ERR! 
 npm ERR! Invalid: lock file's abbrev@1.0.4 does not satisfy abbrev@1.1.1
 npm ERR! 
+npm ERR! Clean install a project
+npm ERR! 
+npm ERR! Usage:
+npm ERR! npm ci
+npm ERR! 
+npm ERR! Options:
+npm ERR! [-S|--save|--no-save|--save-prod|--save-dev|--save-optional|--save-peer|--save-bundle]
+npm ERR! [-E|--save-exact] [-g|--global] [--global-style] [--legacy-bundling]
+npm ERR! [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+npm ERR! [--strict-peer-deps] [--no-package-lock] [--foreground-scripts]
+npm ERR! [--ignore-scripts] [--no-audit] [--no-bin-links] [--no-fund] [--dry-run]
+npm ERR! [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+npm ERR! [-ws|--workspaces] [--include-workspace-root] [--install-links]
+npm ERR! 
+npm ERR! aliases: clean-install, ic, install-clean, isntall-clean
+npm ERR! 
+npm ERR! Run "npm help ci" for more info
 
 npm ERR! A complete log of this run can be found in:
 

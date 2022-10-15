@@ -5,7 +5,6 @@ const baseOpts = {
   call: '',
   color: false,
   path: '',
-  pathArr: [''],
   runPath: '',
   shell: process.platform === 'win32'
     ? process.env.ComSpec || 'cmd'
@@ -56,7 +55,7 @@ t.test('no package.json', t => {
   runScript(baseOpts)
 })
 
-t.test('colorized interactive mode msg', t => {
+t.test('colorized interactive mode msg', async t => {
   t.plan(2)
 
   const runScript = t.mock('../lib/run-script.js', {
@@ -68,7 +67,7 @@ t.test('colorized interactive mode msg', t => {
   })
 
   const OUTPUT = []
-  runScript({
+  await runScript({
     ...baseOpts,
     output: msg => {
       OUTPUT.push(msg)
@@ -76,15 +75,10 @@ t.test('colorized interactive mode msg', t => {
     runPath: '/foo/',
     color: true,
   })
-    .then(() => {
-      t.matchSnapshot(OUTPUT.join('\n'), 'should print colorized output')
-    })
-    .catch(err => {
-      throw err
-    })
+  t.matchSnapshot(OUTPUT.join('\n'), 'should print colorized output')
 })
 
-t.test('no color interactive mode msg', t => {
+t.test('no color interactive mode msg', async t => {
   t.plan(2)
 
   const runScript = t.mock('../lib/run-script.js', {
@@ -96,19 +90,14 @@ t.test('no color interactive mode msg', t => {
   })
 
   const OUTPUT = []
-  runScript({
+  await runScript({
     ...baseOpts,
     output: msg => {
       OUTPUT.push(msg)
     },
     runPath: '/foo/',
   })
-    .then(() => {
-      t.matchSnapshot(OUTPUT.join('\n'), 'should print non-colorized output')
-    })
-    .catch(err => {
-      throw err
-    })
+  t.matchSnapshot(OUTPUT.join('\n'), 'should print non-colorized output')
 })
 
 t.test('no tty', t => {

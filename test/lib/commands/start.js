@@ -10,7 +10,6 @@ const spawk = tspawk(t)
 const makeSpawnArgs = require('@npmcli/run-script/lib/make-spawn-args.js')
 
 t.test('should run start script from package.json', async t => {
-  t.plan(2)
   const { npm } = await loadMockNpm(t, {
     prefixDir: {
       'package.json': JSON.stringify({
@@ -25,11 +24,12 @@ t.test('should run start script from package.json', async t => {
       loglevel: 'silent',
     },
   })
-  const [scriptShell] = makeSpawnArgs({ path: npm.prefix })
-  const script = spawk.spawn(scriptShell, (args) => {
-    t.ok(args.includes('node ./test-start.js "foo"'), 'ran start script with extra args')
-    return true
-  })
+  const [scriptShell, scriptArgs] = makeSpawnArgs({ path: npm.prefix, cmd: 'node ./test-start.js' })
+  // we're calling the script with 'foo' as an argument, so add that to the script
+  let scriptContent = scriptArgs.pop()
+  scriptContent += ' foo'
+  scriptArgs.push(scriptContent)
+  const script = spawk.spawn(scriptShell, scriptArgs)
   await npm.exec('start', ['foo'])
   t.ok(script.called, 'script ran')
 })

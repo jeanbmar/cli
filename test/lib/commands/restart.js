@@ -24,11 +24,14 @@ t.test('should run restart script from package.json', async t => {
       loglevel: 'silent',
     },
   })
-  const [scriptShell] = makeSpawnArgs({ path: npm.prefix })
-  const script = spawk.spawn(scriptShell, (args) => {
-    t.ok(args.includes('node ./test-restart.js "foo"'), 'ran restart script with extra args')
-    return true
+  const [scriptShell, scriptArgs] = makeSpawnArgs({
+    path: npm.prefix,
+    cmd: 'node ./test-restart.js',
   })
+  let scriptContent = scriptArgs.pop()
+  scriptContent += ' foo'
+  scriptArgs.push(scriptContent)
+  const script = spawk.spawn(scriptShell, scriptArgs)
   await npm.exec('restart', ['foo'])
   t.ok(script.called, 'script ran')
 })

@@ -66,7 +66,61 @@ require('fs').writeFileSync(process.argv.slice(2)[0], 'LOCAL PKG')`,
   t.equal(res, 'LOCAL PKG', 'should run local pkg bin script')
 })
 
-t.test('local pkg, must not fetch manifest for avail pkg', async t => {
+t.test('locally available pkg - by scoped name only', async t => {
+  const pkg = {
+    name: '@npmcli/npx-local-test',
+    version: '2.0.0',
+    bin: {
+      'npx-local-test': './index.js',
+    },
+  }
+  const path = t.testdir({
+    cache: {},
+    npxCache: {},
+    node_modules: {
+      '.bin': {},
+      '@npmcli': {
+        'npx-local-test': {
+          'package.json': JSON.stringify(pkg),
+          'index.js': `#!/usr/bin/env node
+  require('fs').writeFileSync(process.argv.slice(2)[0], 'LOCAL PKG')`,
+        },
+      },
+    },
+    'package.json': JSON.stringify({
+      name: 'pkg',
+      dependencies: {
+        '@npmcli/npx-local-test': '^2.0.0',
+      },
+    }),
+  })
+  const runPath = path
+  const cache = resolve(path, 'cache')
+  const npxCache = resolve(path, 'npxCache')
+
+  const executable =
+    resolve(path, 'node_modules/@npmcli/npx-local-test/index.js')
+  fs.chmodSync(executable, 0o775)
+
+  await binLinks({
+    path: resolve(path, 'node_modules/@npmcli/npx-local-test'),
+    pkg,
+  })
+
+  await libexec({
+    ...baseOpts,
+    cache,
+    npxCache,
+    args: ['@npmcli/npx-local-test', 'resfile'],
+    path,
+    runPath,
+  })
+
+  const res = fs.readFileSync(resolve(path, 'resfile')).toString()
+  t.equal(res, 'LOCAL PKG', 'should run local pkg bin script')
+})
+
+t.test('locally available pkg - by name', async t => {
   const pkg = {
     name: '@ruyadorno/create-index',
     version: '2.0.0',
@@ -121,6 +175,291 @@ t.test('local pkg, must not fetch manifest for avail pkg', async t => {
   t.equal(res, 'LOCAL PKG', 'should run local pkg bin script')
 })
 
+t.test('locally available pkg - by version', async t => {
+  const pkg = {
+    name: '@ruyadorno/create-index',
+    version: '1.0.0',
+    bin: {
+      'create-index': './index.js',
+    },
+  }
+  const path = t.testdir({
+    cache: {},
+    npxCache: {},
+    node_modules: {
+      '.bin': {},
+      '@ruyadorno': {
+        'create-index': {
+          'package.json': JSON.stringify(pkg),
+          'index.js': `#!/usr/bin/env node
+  require('fs').writeFileSync('resfile', 'LOCAL PKG')`,
+        },
+      },
+    },
+    'package.json': JSON.stringify({
+      name: 'pkg',
+      dependencies: {
+        '@ruyadorno/create-index': '^1.0.0',
+      },
+    }),
+  })
+  const runPath = path
+  const cache = resolve(path, 'cache')
+  const npxCache = resolve(path, 'npxCache')
+
+  const executable =
+    resolve(path, 'node_modules/@ruyadorno/create-index/index.js')
+  fs.chmodSync(executable, 0o775)
+
+  await binLinks({
+    path: resolve(path, 'node_modules/@ruyadorno/create-index'),
+    pkg,
+  })
+
+  await libexec({
+    ...baseOpts,
+    cache,
+    npxCache,
+    args: ['@ruyadorno/create-index@1.0.0'],
+    path,
+    runPath,
+  })
+
+  const res = fs.readFileSync(resolve(path, 'resfile')).toString()
+  t.equal(res, 'LOCAL PKG', 'should run local pkg bin script')
+})
+
+t.test('locally available pkg - by range', async t => {
+  const pkg = {
+    name: '@ruyadorno/create-index',
+    version: '2.0.0',
+    bin: {
+      'create-index': './index.js',
+    },
+  }
+  const path = t.testdir({
+    cache: {},
+    npxCache: {},
+    node_modules: {
+      '.bin': {},
+      '@ruyadorno': {
+        'create-index': {
+          'package.json': JSON.stringify(pkg),
+          'index.js': `#!/usr/bin/env node
+  require('fs').writeFileSync(process.argv.slice(2)[0], 'LOCAL PKG')`,
+        },
+      },
+    },
+    'package.json': JSON.stringify({
+      name: 'pkg',
+      dependencies: {
+        '@ruyadorno/create-index': '^2.0.0',
+      },
+    }),
+  })
+  const runPath = path
+  const cache = resolve(path, 'cache')
+  const npxCache = resolve(path, 'npxCache')
+
+  const executable =
+    resolve(path, 'node_modules/@ruyadorno/create-index/index.js')
+  fs.chmodSync(executable, 0o775)
+
+  await binLinks({
+    path: resolve(path, 'node_modules/@ruyadorno/create-index'),
+    pkg,
+  })
+
+  await libexec({
+    ...baseOpts,
+    cache,
+    npxCache,
+    packages: ['@ruyadorno/create-index@^2.0.0'],
+    call: 'create-index resfile',
+    path,
+    runPath,
+  })
+
+  const res = fs.readFileSync(resolve(path, 'resfile')).toString()
+  t.equal(res, 'LOCAL PKG', 'should run local pkg bin script')
+})
+
+t.test('locally available pkg - by tag', async t => {
+  const pkg = {
+    name: '@ruyadorno/create-index',
+    version: '1.0.0',
+    bin: {
+      'create-index': './index.js',
+    },
+  }
+
+  const path = t.testdir({
+    cache: {},
+    npxCache: {},
+    node_modules: {
+      '.bin': {},
+      '@ruyadorno': {
+        'create-index': {
+          'package.json': JSON.stringify(pkg),
+          'index.js': `#!/usr/bin/env node
+  require('fs').writeFileSync(process.argv.slice(2)[0], 'LOCAL PKG')`,
+        },
+      },
+      '.package-lock.json': JSON.stringify({
+        name: 'lock',
+        lockfileVersion: 3,
+        requires: true,
+        packages: {
+          'node_modules/@ruyadorno/create-index': {
+            version: '1.0.0',
+            resolved: 'https://registry.npmjs.org/@ruyadorno/create-index/-/create-index-1.0.0.tgz',
+            bin: {
+              'create-index': 'create-index.js',
+            },
+          },
+        },
+
+      }),
+    },
+    'package.json': JSON.stringify({
+      name: 'pkg',
+      dependencies: {
+        '@ruyadorno/create-index': '^1.0.0',
+      },
+    }),
+  })
+  const runPath = path
+  const cache = resolve(path, 'cache')
+  const npxCache = resolve(path, 'npxCache')
+
+  const executable =
+    resolve(path, 'node_modules/@ruyadorno/create-index/index.js')
+  fs.chmodSync(executable, 0o775)
+
+  await binLinks({
+    path: resolve(path, 'node_modules/@ruyadorno/create-index'),
+    pkg,
+  })
+
+  await libexec({
+    ...baseOpts,
+    cache,
+    npxCache,
+    packages: ['@ruyadorno/create-index@latest'],
+    call: 'create-index resfile',
+    path,
+    runPath,
+  })
+
+  const res = fs.readFileSync(resolve(path, 'resfile')).toString()
+  t.equal(res, 'LOCAL PKG', 'should run local pkg bin script')
+})
+
+t.test('multiple local pkgs', async t => {
+  const foo = {
+    name: '@ruyadorno/create-foo',
+    version: '2.0.0',
+    bin: {
+      'create-foo': './index.js',
+    },
+  }
+  const bar = {
+    name: '@ruyadorno/create-bar',
+    version: '2.0.0',
+    bin: {
+      'create-bar': './index.js',
+    },
+  }
+  const path = t.testdir({
+    cache: {},
+    npxCache: {},
+    node_modules: {
+      '.bin': {},
+      '@ruyadorno': {
+        'create-foo': {
+          'package.json': JSON.stringify(foo),
+          'index.js': `#!/usr/bin/env node
+  require('fs').writeFileSync(process.argv.slice(2)[0], 'foo')`,
+        },
+        'create-bar': {
+          'package.json': JSON.stringify(bar),
+          'index.js': `#!/usr/bin/env node
+  require('fs').writeFileSync(process.argv.slice(2)[0], 'bar')`,
+        },
+      },
+    },
+    'package.json': JSON.stringify({
+      name: 'pkg',
+      dependencies: {
+        '@ruyadorno/create-foo': '^2.0.0',
+        '@ruyadorno/create-bar': '^2.0.0',
+      },
+    }),
+  })
+  const runPath = path
+  const cache = resolve(path, 'cache')
+  const npxCache = resolve(path, 'npxCache')
+
+  const setupBins = async (pkg) => {
+    const executable =
+      resolve(path, `node_modules/${pkg.name}/index.js`)
+    fs.chmodSync(executable, 0o775)
+
+    await binLinks({
+      path: resolve(path, `node_modules/${pkg.name}`),
+      pkg,
+    })
+  }
+
+  await Promise.all([foo, bar]
+    .map(setupBins))
+
+  await libexec({
+    ...baseOpts,
+    localBin: resolve(path, 'node_modules/.bin'),
+    cache,
+    npxCache,
+    packages: ['@ruyadorno/create-foo', '@ruyadorno/create-bar'],
+    call: 'create-foo resfile && create-bar bar',
+    path,
+    runPath,
+  })
+
+  const resFoo = fs.readFileSync(resolve(path, 'resfile')).toString()
+  t.equal(resFoo, 'foo', 'should run local pkg bin script')
+  const resBar = fs.readFileSync(resolve(path, 'bar')).toString()
+  t.equal(resBar, 'bar', 'should run local pkg bin script')
+})
+
+t.test('no npxCache', async t => {
+  const path = t.testdir({
+    cache: {},
+    a: {
+      'package.json': JSON.stringify({
+        name: 'a',
+        bin: {
+          a: './index.js',
+        },
+      }),
+      'index.js': `#!/usr/bin/env node
+require('fs').writeFileSync(process.argv.slice(2)[0], 'LOCAL PKG')`,
+    },
+  })
+  const runPath = path
+  const cache = resolve(path, 'cache')
+
+  const executable = resolve(path, 'a/index.js')
+  fs.chmodSync(executable, 0o775)
+
+  await t.rejects(libexec({
+    ...baseOpts,
+    args: [`file:${resolve(path, 'a')}`, 'resfile'],
+    cache,
+    path,
+    runPath,
+  }), /Must provide a valid npxCache path/)
+})
+
 t.test('local file system path', async t => {
   const path = t.testdir({
     cache: {},
@@ -143,7 +482,16 @@ require('fs').writeFileSync(process.argv.slice(2)[0], 'LOCAL PKG')`,
   const executable = resolve(path, 'a/index.js')
   fs.chmodSync(executable, 0o775)
 
-  await libexec({
+  const mockexec = t.mock('../lib/index.js', {
+    '@npmcli/ci-detect': () => true,
+    'proc-log': {
+      warn (title, msg) {
+        t.fail('should not warn about local file package install')
+      },
+    },
+  })
+
+  await mockexec({
     ...baseOpts,
     args: [`file:${resolve(path, 'a')}`, 'resfile'],
     cache,
@@ -178,6 +526,7 @@ t.test('global space pkg', async t => {
     },
   })
   const globalBin = resolve(path, 'global/node_modules/.bin')
+  const globalPath = resolve(path, 'global')
   const runPath = path
 
   const executable = resolve(path, 'global/node_modules/a')
@@ -192,6 +541,7 @@ t.test('global space pkg', async t => {
     ...baseOpts,
     args: ['a', 'resfile'],
     globalBin,
+    globalPath,
     path,
     runPath,
   })
@@ -200,16 +550,62 @@ t.test('global space pkg', async t => {
   t.equal(res, 'GLOBAL PKG', 'should run local pkg bin script')
 })
 
-t.test('run from registry', async t => {
+t.test('global scoped pkg', async t => {
+  const pkg = {
+    name: '@ruyadorno/create-test',
+    bin: {
+      'create-test': 'index.js',
+    },
+  }
+  const path = t.testdir({
+    cache: {},
+    npxCache: {},
+    global: {
+      node_modules: {
+        '.bin': {},
+        '@ruyadorno': {
+          'create-test': {
+            'index.js': `#!/usr/bin/env node
+    require('fs').writeFileSync(process.argv.slice(2)[0], 'GLOBAL PKG')`,
+            'package.json': JSON.stringify(pkg),
+          },
+        },
+      },
+    },
+  })
+  const globalBin = resolve(path, 'global/node_modules/.bin')
+  const globalPath = resolve(path, 'global')
+  const runPath = path
+
+  await binLinks({
+    path: resolve(path, 'global/node_modules/@ruyadorno/create-test'),
+    pkg,
+  })
+
+  await libexec({
+    ...baseOpts,
+    args: ['@ruyadorno/create-test', 'resfile'],
+    globalBin,
+    globalPath,
+    path,
+    runPath,
+  })
+
+  const res = fs.readFileSync(resolve(path, 'resfile')).toString()
+  t.equal(res, 'GLOBAL PKG', 'should run global pkg bin script')
+})
+
+t.test('run from registry - no local packages', async t => {
   const testdir = t.testdir({
     cache: {},
     npxCache: {},
+    global: {
+      lib: {},
+      bin: {},
+    },
     work: {},
   })
   const path = resolve(testdir, 'work')
-  const runPath = path
-  const cache = resolve(testdir, 'cache')
-  const npxCache = resolve(testdir, 'npxCache')
 
   t.throws(
     () => fs.statSync(resolve(path, 'index.js')),
@@ -220,13 +616,140 @@ t.test('run from registry', async t => {
   await libexec({
     ...baseOpts,
     args: ['@ruyadorno/create-index'],
+    cache: resolve(testdir, 'cache'),
+    globalPath: resolve(testdir, 'global'),
+    npxCache: resolve(testdir, 'npxCache'),
+    path,
+    runPath: path,
+  })
+
+  t.ok(fs.statSync(resolve(path, 'index.js')).isFile(), 'ran create pkg')
+})
+
+t.test('run from registry - local version mismatch', async t => {
+  const path = t.testdir({
+    cache: {},
+    npxCache: {},
+    node_modules: {
+      '@ruyadorno': {
+        'create-index': {
+          'package.json': JSON.stringify({
+            name: '@ruyadorno/create-index',
+            version: '2.0.0',
+          }),
+        },
+      },
+    },
+    'package.json': JSON.stringify({
+      name: 'pkg',
+      dependencies: {
+        '@ruyadorno/create-index': '^2.0.0',
+      },
+    }),
+  })
+  const runPath = path
+  const cache = resolve(path, 'cache')
+  const npxCache = resolve(path, 'npxCache')
+
+  await libexec({
+    ...baseOpts,
+    args: ['@ruyadorno/create-index@1.0.0'],
     cache,
     npxCache,
     path,
     runPath,
   })
 
-  t.ok(fs.statSync(resolve(path, 'index.js')).isFile(), 'ran create pkg')
+  t.ok(fs.statSync(resolve(path, 'index.js')).isFile(), 'ran create pkg from registry')
+})
+
+t.test('run from registry - local range mismatch', async t => {
+  const path = t.testdir({
+    cache: {},
+    npxCache: {},
+    node_modules: {
+      '@ruyadorno': {
+        'create-index': {
+          'package.json': JSON.stringify({
+            name: '@ruyadorno/create-index',
+            version: '2.0.0',
+          }),
+        },
+      },
+    },
+    'package.json': JSON.stringify({
+      name: 'pkg',
+      dependencies: {
+        '@ruyadorno/create-index': '^2.0.0',
+      },
+    }),
+  })
+  const runPath = path
+  const cache = resolve(path, 'cache')
+  const npxCache = resolve(path, 'npxCache')
+
+  await libexec({
+    ...baseOpts,
+    args: ['@ruyadorno/create-index@^1.0.0'],
+    cache,
+    npxCache,
+    path,
+    runPath,
+  })
+
+  t.ok(fs.statSync(resolve(path, 'index.js')).isFile(), 'ran create pkg from registry')
+})
+
+t.test('run from registry - local tag mismatch', async t => {
+  const path = t.testdir({
+    cache: {},
+    npxCache: {},
+    node_modules: {
+      '@ruyadorno': {
+        'create-index': {
+          'package.json': JSON.stringify({
+            name: '@ruyadorno/create-index',
+            version: '2.0.0',
+          }),
+        },
+      },
+      '.package-lock.json': JSON.stringify({
+        name: 'lock',
+        lockfileVersion: 3,
+        requires: true,
+        packages: {
+          'node_modules/@ruyadorno/create-index': {
+            version: '2.0.0',
+            resolved: 'https://registry.npmjs.org/@ruyadorno/create-index/-/create-index-2.0.0.tgz',
+            bin: {
+              'create-index': 'create-index.js',
+            },
+          },
+        },
+
+      }),
+    },
+    'package.json': JSON.stringify({
+      name: 'pkg',
+      dependencies: {
+        '@ruyadorno/create-index': '^2.0.0',
+      },
+    }),
+  })
+  const runPath = path
+  const cache = resolve(path, 'cache')
+  const npxCache = resolve(path, 'npxCache')
+
+  await libexec({
+    ...baseOpts,
+    args: ['@ruyadorno/create-index@latest'],
+    cache,
+    npxCache,
+    path,
+    runPath,
+  })
+
+  t.ok(fs.statSync(resolve(path, 'index.js')).isFile(), 'ran create pkg from registry')
 })
 
 t.test('avoid install when exec from registry an available pkg', async t => {
@@ -296,7 +819,7 @@ t.test('run multiple from registry', async t => {
   await libexec({
     ...baseOpts,
     packages: ['@ruyadorno/create-test', '@ruyadorno/create-index'],
-    call: ['create-test && create-index'],
+    call: 'create-test && create-index',
     cache,
     npxCache,
     path,
@@ -580,9 +1103,15 @@ t.test('no prompt if CI, multiple packages', async t => {
     'proc-log': {
       warn (title, msg) {
         t.equal(title, 'exec', 'should warn exec title')
-        const expected = 'The following packages were not found and will be ' +
-          'installed: @ruyadorno/create-index, @ruyadorno/create-test'
-        t.equal(msg, expected, 'should warn installing pkg')
+        // this message is nondeterministic as it queries manifests so we just
+        // test the constituent parts
+        t.match(
+          msg,
+          'The following packages were not found and will be installed:',
+          'should warn installing packages'
+        )
+        t.match(msg, '@ruyadorno/create-index@1.0.0', 'includes package being installed')
+        t.match(msg, '@ruyadorno/create-test@1.0.0', 'includes package being installed')
       },
     },
   })
@@ -599,7 +1128,7 @@ t.test('no prompt if CI, multiple packages', async t => {
   })
 })
 
-t.test('sane defaults', async t => {
+t.test('defaults', async t => {
   const testdir = t.testdir({
     cache: {},
     npxCache: {},

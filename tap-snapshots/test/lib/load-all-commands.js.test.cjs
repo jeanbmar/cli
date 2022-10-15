@@ -33,6 +33,7 @@ npm adduser
 
 Options:
 [--registry <registry>] [--scope <@scope>]
+[--auth-type <legacy|web|sso|saml|oauth|webauthn>]
 
 aliases: login, add-user
 
@@ -43,7 +44,7 @@ exports[`test/lib/load-all-commands.js TAP load each command audit > must match 
 Run a security audit
 
 Usage:
-npm audit [fix]
+npm audit [fix|signatures]
 
 Options:
 [--audit-level <info|low|moderate|high|critical|none>] [--dry-run] [-f|--force]
@@ -51,7 +52,7 @@ Options:
 [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
 [--foreground-scripts] [--ignore-scripts]
 [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
-[-ws|--workspaces] [--include-workspace-root]
+[-ws|--workspaces] [--include-workspace-root] [--install-links]
 
 Run "npm help audit" for more info
 `
@@ -69,7 +70,7 @@ Run "npm help bin" for more info
 `
 
 exports[`test/lib/load-all-commands.js TAP load each command birthday > must match snapshot 1`] = `
-Birthday
+Birthday, deprecated
 
 Usage:
 npm birthday
@@ -81,10 +82,12 @@ exports[`test/lib/load-all-commands.js TAP load each command bugs > must match s
 Report bugs for a package in a web browser
 
 Usage:
-npm bugs [<pkgname>]
+npm bugs [<pkgname> [<pkgname> ...]]
 
 Options:
 [--no-browser|--browser <browser>] [--registry <registry>]
+[-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+[-ws|--workspaces] [--include-workspace-root]
 
 alias: issues
 
@@ -95,11 +98,7 @@ exports[`test/lib/load-all-commands.js TAP load each command cache > must match 
 Manipulates packages cache
 
 Usage:
-npm cache add <tarball file>
-npm cache add <folder>
-npm cache add <tarball url>
-npm cache add <git url>
-npm cache add <name>@<version>
+npm cache add <package-spec>
 npm cache clean [<key>]
 npm cache ls [<name>@<version>]
 npm cache verify
@@ -111,14 +110,19 @@ Run "npm help cache" for more info
 `
 
 exports[`test/lib/load-all-commands.js TAP load each command ci > must match snapshot 1`] = `
-Install a project with a clean slate
+Clean install a project
 
 Usage:
 npm ci
 
 Options:
-[--no-audit] [--foreground-scripts] [--ignore-scripts]
-[--script-shell <script-shell>]
+[-S|--save|--no-save|--save-prod|--save-dev|--save-optional|--save-peer|--save-bundle]
+[-E|--save-exact] [-g|--global] [--global-style] [--legacy-bundling]
+[--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+[--strict-peer-deps] [--no-package-lock] [--foreground-scripts]
+[--ignore-scripts] [--no-audit] [--no-bin-links] [--no-fund] [--dry-run]
+[-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+[-ws|--workspaces] [--include-workspace-root] [--install-links]
 
 aliases: clean-install, ic, install-clean, isntall-clean
 
@@ -180,7 +184,7 @@ Options:
 [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]] [--ignore-scripts]
 [--no-audit] [--no-bin-links] [--no-fund] [--dry-run]
 [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
-[-ws|--workspaces] [--include-workspace-root]
+[-ws|--workspaces] [--include-workspace-root] [--install-links]
 
 alias: ddp
 
@@ -191,7 +195,7 @@ exports[`test/lib/load-all-commands.js TAP load each command deprecate > must ma
 Deprecate a version of a package
 
 Usage:
-npm deprecate <pkg>[@<version>] <message>
+npm deprecate <package-spec> <message>
 
 Options:
 [--registry <registry>] [--otp <otp>]
@@ -206,10 +210,10 @@ Usage:
 npm diff [...<paths>]
 
 Options:
-[--diff <pkg-name|spec|version> [--diff <pkg-name|spec|version> ...]]
-[--diff-name-only] [--diff-unified <number>] [--diff-ignore-all-space]
-[--diff-no-prefix] [--diff-src-prefix <path>] [--diff-dst-prefix <path>]
-[--diff-text] [-g|--global] [--tag <tag>]
+[--diff <package-spec> [--diff <package-spec> ...]] [--diff-name-only]
+[--diff-unified <number>] [--diff-ignore-all-space] [--diff-no-prefix]
+[--diff-src-prefix <path>] [--diff-dst-prefix <path>] [--diff-text] [-g|--global]
+[--tag <tag>]
 [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
 [-ws|--workspaces] [--include-workspace-root]
 
@@ -220,9 +224,9 @@ exports[`test/lib/load-all-commands.js TAP load each command dist-tag > must mat
 Modify package distribution tags
 
 Usage:
-npm dist-tag add <pkg>@<version> [<tag>]
-npm dist-tag rm <pkg> <tag>
-npm dist-tag ls [<pkg>]
+npm dist-tag add <package-spec (with version)> [<tag>]
+npm dist-tag rm <package-spec> <tag>
+npm dist-tag ls [<package-spec>]
 
 Options:
 [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
@@ -283,8 +287,7 @@ npm exec -c '<cmd> [args...]'
 npm exec --package=foo -c '<cmd> [args...]'
 
 Options:
-[--package <pkg>[@<version>] [--package <pkg>[@<version>] ...]]
-[-c|--call <call>]
+[--package <package-spec> [--package <package-spec> ...]] [-c|--call <call>]
 [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
 [-ws|--workspaces] [--include-workspace-root]
 
@@ -297,7 +300,7 @@ exports[`test/lib/load-all-commands.js TAP load each command explain > must matc
 Explain installed packages
 
 Usage:
-npm explain <folder | specifier>
+npm explain <package-spec>
 
 Options:
 [--json] [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
@@ -330,7 +333,7 @@ Options:
 [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]] [--ignore-scripts]
 [--no-audit] [--no-bin-links] [--no-fund]
 [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
-[-ws|--workspaces] [--include-workspace-root]
+[-ws|--workspaces] [--include-workspace-root] [--install-links]
 
 Run "npm help find-dupes" for more info
 `
@@ -339,7 +342,7 @@ exports[`test/lib/load-all-commands.js TAP load each command fund > must match s
 Retrieve funding information
 
 Usage:
-npm fund [[<@scope>/]<pkg>]
+npm fund [<package-spec>]
 
 Options:
 [--json] [--no-browser|--browser <browser>] [--unicode]
@@ -403,14 +406,13 @@ exports[`test/lib/load-all-commands.js TAP load each command init > must match s
 Create a package.json file
 
 Usage:
-npm init [--force|-f|--yes|-y|--scope]
+npm init <package-spec> (same as \`npx <package-spec>)
 npm init <@scope> (same as \`npx <@scope>/create\`)
-npm init [<@scope>/]<name> (same as \`npx [<@scope>/]create-<name>\`)
 
 Options:
-[-y|--yes] [-f|--force]
+[-y|--yes] [-f|--force] [--scope <@scope>]
 [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
-[-ws|--workspaces] [--include-workspace-root]
+[-ws|--workspaces] [--no-workspaces-update] [--include-workspace-root]
 
 aliases: create, innit
 
@@ -421,16 +423,7 @@ exports[`test/lib/load-all-commands.js TAP load each command install > must matc
 Install a package
 
 Usage:
-npm install [<@scope>/]<pkg>
-npm install [<@scope>/]<pkg>@<tag>
-npm install [<@scope>/]<pkg>@<version>
-npm install [<@scope>/]<pkg>@<version range>
-npm install <alias>@npm:<name>
-npm install <folder>
-npm install <tarball file>
-npm install <tarball url>
-npm install <git:// url>
-npm install <github username>/<github project>
+npm install [<package-spec> ...]
 
 Options:
 [-S|--save|--no-save|--save-prod|--save-dev|--save-optional|--save-peer|--save-bundle]
@@ -439,7 +432,7 @@ Options:
 [--strict-peer-deps] [--no-package-lock] [--foreground-scripts]
 [--ignore-scripts] [--no-audit] [--no-bin-links] [--no-fund] [--dry-run]
 [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
-[-ws|--workspaces] [--include-workspace-root]
+[-ws|--workspaces] [--include-workspace-root] [--install-links]
 
 aliases: add, i, in, ins, inst, insta, instal, isnt, isnta, isntal, isntall
 
@@ -453,8 +446,13 @@ Usage:
 npm install-ci-test
 
 Options:
-[--no-audit] [--foreground-scripts] [--ignore-scripts]
-[--script-shell <script-shell>]
+[-S|--save|--no-save|--save-prod|--save-dev|--save-optional|--save-peer|--save-bundle]
+[-E|--save-exact] [-g|--global] [--global-style] [--legacy-bundling]
+[--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+[--strict-peer-deps] [--no-package-lock] [--foreground-scripts]
+[--ignore-scripts] [--no-audit] [--no-bin-links] [--no-fund] [--dry-run]
+[-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+[-ws|--workspaces] [--include-workspace-root] [--install-links]
 
 alias: cit
 
@@ -465,16 +463,7 @@ exports[`test/lib/load-all-commands.js TAP load each command install-test > must
 Install package(s) and run tests
 
 Usage:
-npm install-test [<@scope>/]<pkg>
-npm install-test [<@scope>/]<pkg>@<tag>
-npm install-test [<@scope>/]<pkg>@<version>
-npm install-test [<@scope>/]<pkg>@<version range>
-npm install-test <alias>@npm:<name>
-npm install-test <folder>
-npm install-test <tarball file>
-npm install-test <tarball url>
-npm install-test <git:// url>
-npm install-test <github username>/<github project>
+npm install-test [<package-spec> ...]
 
 Options:
 [-S|--save|--no-save|--save-prod|--save-dev|--save-optional|--save-peer|--save-bundle]
@@ -483,7 +472,7 @@ Options:
 [--strict-peer-deps] [--no-package-lock] [--foreground-scripts]
 [--ignore-scripts] [--no-audit] [--no-bin-links] [--no-fund] [--dry-run]
 [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
-[-ws|--workspaces] [--include-workspace-root]
+[-ws|--workspaces] [--include-workspace-root] [--install-links]
 
 alias: it
 
@@ -494,8 +483,7 @@ exports[`test/lib/load-all-commands.js TAP load each command link > must match s
 Symlink a package folder
 
 Usage:
-npm link (in package dir)
-npm link [<@scope>/]<pkg>[@<version>]
+npm link [<package-spec>]
 
 Options:
 [-S|--save|--no-save|--save-prod|--save-dev|--save-optional|--save-peer|--save-bundle]
@@ -504,7 +492,7 @@ Options:
 [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]] [--ignore-scripts]
 [--no-audit] [--no-bin-links] [--no-fund] [--dry-run]
 [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
-[-ws|--workspaces] [--include-workspace-root]
+[-ws|--workspaces] [--include-workspace-root] [--install-links]
 
 alias: ln
 
@@ -522,7 +510,7 @@ Options:
 [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]] [--link]
 [--package-lock-only] [--unicode]
 [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
-[-ws|--workspaces] [--include-workspace-root]
+[-ws|--workspaces] [--include-workspace-root] [--install-links]
 
 alias: la
 
@@ -537,6 +525,7 @@ npm adduser
 
 Options:
 [--registry <registry>] [--scope <@scope>]
+[--auth-type <legacy|web|sso|saml|oauth|webauthn>]
 
 aliases: login, add-user
 
@@ -559,14 +548,14 @@ exports[`test/lib/load-all-commands.js TAP load each command ls > must match sna
 List installed packages
 
 Usage:
-npm ls [[<@scope>/]<pkg> ...]
+npm ls <package-spec>
 
 Options:
 [-a|--all] [--json] [-l|--long] [-p|--parseable] [-g|--global] [--depth <depth>]
 [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]] [--link]
 [--package-lock-only] [--unicode]
 [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
-[-ws|--workspaces] [--include-workspace-root]
+[-ws|--workspaces] [--include-workspace-root] [--install-links]
 
 alias: list
 
@@ -593,7 +582,7 @@ exports[`test/lib/load-all-commands.js TAP load each command outdated > must mat
 Check for outdated packages
 
 Usage:
-npm outdated [[<@scope>/]<pkg> ...]
+npm outdated [<package-spec> ...]
 
 Options:
 [-a|--all] [--json] [-l|--long] [-p|--parseable] [-g|--global]
@@ -606,12 +595,14 @@ exports[`test/lib/load-all-commands.js TAP load each command owner > must match 
 Manage package owners
 
 Usage:
-npm owner add <user> [<@scope>/]<pkg>
-npm owner rm <user> [<@scope>/]<pkg>
-npm owner ls [<@scope>/]<pkg>
+npm owner add <user> <package-spec>
+npm owner rm <user> <package-spec>
+npm owner ls <package-spec>
 
 Options:
 [--registry <registry>] [--otp <otp>]
+[-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+[-ws|--workspaces]
 
 alias: author
 
@@ -622,7 +613,7 @@ exports[`test/lib/load-all-commands.js TAP load each command pack > must match s
 Create a tarball from a package
 
 Usage:
-npm pack [[<@scope>/]<pkg>...]
+npm pack <package-spec>
 
 Options:
 [--dry-run] [--json] [--pack-destination <pack-destination>]
@@ -699,7 +690,7 @@ Options:
 [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]] [--dry-run]
 [--json] [--foreground-scripts] [--ignore-scripts]
 [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
-[-ws|--workspaces] [--include-workspace-root]
+[-ws|--workspaces] [--include-workspace-root] [--install-links]
 
 Run "npm help prune" for more info
 `
@@ -708,7 +699,7 @@ exports[`test/lib/load-all-commands.js TAP load each command publish > must matc
 Publish a package
 
 Usage:
-npm publish [<folder>]
+npm publish <package-spec>
 
 Options:
 [--tag <tag>] [--access <restricted|public>] [--dry-run] [--otp <otp>]
@@ -718,16 +709,30 @@ Options:
 Run "npm help publish" for more info
 `
 
+exports[`test/lib/load-all-commands.js TAP load each command query > must match snapshot 1`] = `
+Retrieve a filtered list of packages
+
+Usage:
+npm query <selector>
+
+Options:
+[-g|--global]
+[-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+[-ws|--workspaces] [--include-workspace-root]
+
+Run "npm help query" for more info
+`
+
 exports[`test/lib/load-all-commands.js TAP load each command rebuild > must match snapshot 1`] = `
 Rebuild a package
 
 Usage:
-npm rebuild [[<@scope>/]<name>[@<version>] ...]
+npm rebuild [<package-spec>] ...]
 
 Options:
 [-g|--global] [--no-bin-links] [--foreground-scripts] [--ignore-scripts]
 [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
-[-ws|--workspaces] [--include-workspace-root]
+[-ws|--workspaces] [--include-workspace-root] [--install-links]
 
 alias: rb
 
@@ -741,7 +746,7 @@ Usage:
 npm repo [<pkgname> [<pkgname> ...]]
 
 Options:
-[--no-browser|--browser <browser>]
+[--no-browser|--browser <browser>] [--registry <registry>]
 [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
 [-ws|--workspaces] [--include-workspace-root]
 
@@ -781,7 +786,7 @@ npm run-script <command> [-- <args>]
 Options:
 [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
 [-ws|--workspaces] [--include-workspace-root] [--if-present] [--ignore-scripts]
-[--script-shell <script-shell>]
+[--foreground-scripts] [--script-shell <script-shell>]
 
 aliases: run, rum, urn
 
@@ -814,7 +819,7 @@ Run "npm help set" for more info
 `
 
 exports[`test/lib/load-all-commands.js TAP load each command set-script > must match snapshot 1`] = `
-Set tasks in the scripts section of package.json
+Set tasks in the scripts section of package.json, deprecated
 
 Usage:
 npm set-script [<script>] [<command>]
@@ -839,10 +844,10 @@ exports[`test/lib/load-all-commands.js TAP load each command star > must match s
 Mark your favorite packages
 
 Usage:
-npm star [<pkg>...]
+npm star [<package-spec>...]
 
 Options:
-[--registry <registry>] [--unicode]
+[--registry <registry>] [--unicode] [--otp <otp>]
 
 Run "npm help star" for more info
 `
@@ -937,7 +942,7 @@ npm uninstall [<@scope>/]<pkg>...
 Options:
 [-S|--save|--no-save|--save-prod|--save-dev|--save-optional|--save-peer|--save-bundle]
 [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
-[-ws|--workspaces] [--include-workspace-root]
+[-ws|--workspaces] [--include-workspace-root] [--install-links]
 
 aliases: unlink, remove, rm, r, un
 
@@ -948,7 +953,7 @@ exports[`test/lib/load-all-commands.js TAP load each command unpublish > must ma
 Remove a package from the registry
 
 Usage:
-npm unpublish [<@scope>/]<pkg>[@<version>]
+npm unpublish [<package-spec>]
 
 Options:
 [--dry-run] [-f|--force]
@@ -962,7 +967,7 @@ exports[`test/lib/load-all-commands.js TAP load each command unstar > must match
 Remove an item from your favorite packages
 
 Usage:
-npm unstar [<pkg>...]
+npm unstar [<package-spec>...]
 
 Options:
 [--registry <registry>] [--unicode] [--otp <otp>]
@@ -983,7 +988,7 @@ Options:
 [--strict-peer-deps] [--no-package-lock] [--foreground-scripts]
 [--ignore-scripts] [--no-audit] [--no-bin-links] [--no-fund] [--dry-run]
 [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
-[-ws|--workspaces] [--include-workspace-root]
+[-ws|--workspaces] [--include-workspace-root] [--install-links]
 
 aliases: up, upgrade, udpate
 
@@ -1011,7 +1016,7 @@ exports[`test/lib/load-all-commands.js TAP load each command view > must match s
 View registry info
 
 Usage:
-npm view [<@scope>/]<pkg>[@<version>] [<field>[.subfield]...]
+npm view [<package-spec>] [<field>[.subfield]...]
 
 Options:
 [--json] [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
